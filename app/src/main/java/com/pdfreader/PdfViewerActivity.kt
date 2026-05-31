@@ -1,12 +1,14 @@
 package com.pdfreader
 
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.appbar.MaterialToolbar
+import kotlinx.coroutines.launch
 import java.io.File
 
 class PdfViewerActivity : AppCompatActivity() {
@@ -49,23 +51,25 @@ class PdfViewerActivity : AppCompatActivity() {
 
         val cacheUri = Uri.fromFile(file)
 
-        val pageCount = try {
-            rendererManager.open(cacheUri)
-        } catch (e: Exception) {
-            finish()
-            return
-        }
-
-        adapter = PdfPageAdapter(pageCount, rendererManager, viewPager)
-        viewPager.adapter = adapter
-
-        updatePageIndicator(0, pageCount)
-
-        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                updatePageIndicator(position, pageCount)
+        lifecycleScope.launch {
+            val pageCount = try {
+                rendererManager.open(cacheUri)
+            } catch (e: Exception) {
+                finish()
+                return@launch
             }
-        })
+
+            adapter = PdfPageAdapter(pageCount, rendererManager, viewPager)
+            viewPager.adapter = adapter
+
+            updatePageIndicator(0, pageCount)
+
+            viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    updatePageIndicator(position, pageCount)
+                }
+            })
+        }
     }
 
     private fun updatePageIndicator(current: Int, total: Int) {

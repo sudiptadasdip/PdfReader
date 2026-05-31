@@ -68,7 +68,7 @@ class PdfPageAdapter(
 
     override fun onViewDetachedFromWindow(holder: PageHolder) {
         super.onViewDetachedFromWindow(holder)
-        val pos = holder.bindingAdapterPosition
+        val pos = holder.layoutPosition
         if (pos != RecyclerView.NO_POSITION) {
             jobs[pos]?.cancel()
         }
